@@ -17,7 +17,7 @@ This is a simple Flask-based web application for creating and taking quizzes. Us
     Due to the variety of potential errors and file formats, we cannot predict or handle every possible formatting issue. Therefore, it is crucial to <strong>carefully follow the formatting instructions provided</strong>. Incorrectly formatted files may lead to errors or unexpected behavior in the application.
 </div>
 
-Some cases are covered and errosr with reference to the number of the block of the question are printed.
+Some cases are covered and errors with reference to the number of the block of the question are printed.
 
 ## Prerequisites
 
