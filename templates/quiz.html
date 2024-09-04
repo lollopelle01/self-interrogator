@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question {{ session['current_question'] + 1 }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+        }
+        h2 {
+            color: #007BFF;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        .radio-group {
+            margin-bottom: 1rem;
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+        .radio-group label {
+            margin-right: 1rem;
+            font-size: 1rem;
+        }
+        input[type="text"] {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Question {{ session['current_question'] + 1 }} of {{ session['num_questions'] }}:</h2>
+        <p>{{ question }}</p>
+        <form method="POST" action="{{ url_for('quiz') }}">
+            {% if options %}
+                <div class="radio-group">
+                    {% for option in options %}
+                        <input type="radio" id="{{ option }}" name="answer" value="{{ option }}" required>
+                        <label for="{{ option }}">{{ option }}</label><br>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <label for="answer">Your Answer:</label>
+                <input type="text" id="answer" name="answer" required>
+            {% endif %}
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

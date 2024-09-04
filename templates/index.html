@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        select, input[type="number"] {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .examples {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #ddd;
+        }
+        .examples h2 {
+            color: #007BFF;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .examples pre {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Quiz Application</h1>
+        <form method="POST" action="{{ url_for('index') }}">
+            <label for="modality">Select the type of quiz:</label>
+            <select id="modality" name="modality" required>
+                <option value="single">Single Answer Questions</option>
+                <option value="multiple">Multiple Choice Questions</option>
+            </select>
+
+            <label for="num_questions">How many questions would you like to answer?</label>
+            <input type="number" id="num_questions" name="num_questions" required min="1" max="100">
+
+            <label for="file_upload">Upload your questions file (.txt):</label>
+            <input type="file" id="file_upload" name="file_upload" accept=".txt" required>
+
+            <button type="submit">Start Quiz</button>
+        </form>
+
+        <div class="examples">
+            <h2>File Format Examples:</h2>
+            <div>
+                <h3>Single Answer Questions:</h3>
+                <pre>
+What is the chemical formula for water?
+H2O
+
+Who is considered the father of geometry?
+Euclid
+                </pre>
+            </div>
+            <div>
+                <h3>Multiple Choice Questions:</h3>
+                <pre>
+Which planet is known as the Red Planet?
+a) Venus
+b) Mars
+c) Jupiter
+d) Saturn
+Correct answer: b
+
+What event marked the beginning of World War II?
+a) The fall of the Bastille
+b) The declaration of war on England
+c) The invasion of Poland
+d) The attack on Pearl Harbor
+Correct answer: c
+                </pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
