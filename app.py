@@ -94,7 +94,7 @@ def load_questions(file, modality):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        modality = request.form['modality']
+        session["modality"] = request.form['modality']
         question_file = request.files['file_upload']
         num_questions = int(request.form['num_questions'])
         
@@ -105,7 +105,7 @@ def index():
         
         try:
             # Load questions from the file
-            questions = load_questions(question_file, modality)
+            questions = load_questions(question_file, session["modality"])
         except ValueError as e:
             flash(str(e), 'error')
             return redirect(url_for('index'))
@@ -135,6 +135,8 @@ def quiz():
         else :
             correct_answer = current_question[2].strip().lower()
 
+        if session["modality"] == "multiple" : user_answer = user_answer[0]
+        
         if user_answer == correct_answer:
             session['correct_answers'] += 1
 
