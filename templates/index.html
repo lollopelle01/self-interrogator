@@ -75,12 +75,36 @@
             overflow-x: auto;
             white-space: pre-wrap;
         }
+        .flash {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .flash.error {
+            background-color: #f44336;
+        }
+        .flash.success {
+            background-color: #4CAF50;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Welcome to the Quiz Application</h1>
-        <form method="POST" action="{{ url_for('index') }}">
+
+        <!-- Flash message display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div>
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('index') }}" enctype="multipart/form-data">
             <label for="modality">Select the type of quiz:</label>
             <select id="modality" name="modality" required>
                 <option value="single">Single Answer Questions</option>

@@ -10,6 +10,15 @@ This is a simple Flask-based web application for creating and taking quizzes. Us
 - **Session Management**: Keeps track of user progress and answers using sessions.
 - **Results Page**: Displays the user's score and answers after completing the quiz.
 
+## Important Note on File Formatting
+
+<div style="background-color: #f8d7da; padding: 10px; border-radius: 5px; border: 1px solid #f5c6cb;">
+    <strong>Important:</strong> Please be aware that the quiz application relies on correctly formatted text files for loading questions. The file format must adhere to specific guidelines for the application to function correctly.
+    Due to the variety of potential errors and file formats, we cannot predict or handle every possible formatting issue. Therefore, it is crucial to <strong>carefully follow the formatting instructions provided</strong>. Incorrectly formatted files may lead to errors or unexpected behavior in the application.
+</div>
+
+Some cases are covered and errosr with reference to the number of the block of the question are printed.
+
 ## Prerequisites
 
 - Python 3.6 or higher
@@ -30,6 +39,6 @@ This is a simple Flask-based web application for creating and taking quizzes. Us
    ```
 3. **Run the Application**
 
-```bash
-python3 app.py
-```
+   ```bash
+   python3 app.py
+   ```
