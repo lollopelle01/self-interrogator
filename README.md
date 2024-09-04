@@ -21,23 +21,24 @@ Some cases are covered and errosr with reference to the number of the block of t
 
 ## Prerequisites
 
-- Python 3.6 or higher
-- Flask
+- [Python 3.6 or higher][(https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://realpython.com/installing-python/&ved=2ahUKEwiun5-ynamIAxWz9rsIHY0YNnQQFnoECBkQAQ&usg=AOvVaw1uZgaq1MKUbzfVvPiovAeF](https://www.python.org/downloads/))
+- [Pip](https://pip.pypa.io/en/stable/installation/)
 
 ## Installation
 
-1. **Clone the Repository**
+1. **Open the Terminal**
+2. **Clone the Repository**
 
    ```bash
    git clone https://github.com/lollopelle01/self-interrogator.git
    cd self-interrogator
    ```
-2. **Install Dependencies**
+3. **Install Dependencies**
 
    ```bash
    pip install -r requirements.txt
    ```
-3. **Run the Application**
+4. **Run the Application**
 
    ```bash
    python3 app.py
