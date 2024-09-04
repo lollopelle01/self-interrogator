@@ -21,7 +21,7 @@ Some cases are covered and errosr with reference to the number of the block of t
 
 ## Prerequisites
 
-- [Python 3.6 or higher][(https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://realpython.com/installing-python/&ved=2ahUKEwiun5-ynamIAxWz9rsIHY0YNnQQFnoECBkQAQ&usg=AOvVaw1uZgaq1MKUbzfVvPiovAeF](https://www.python.org/downloads/))
+- [Python 3.6 or higher](https://www.python.org/downloads/)
 - [Pip](https://pip.pypa.io/en/stable/installation/)
 
 ## Installation
