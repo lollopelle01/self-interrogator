@@ -110,6 +110,10 @@ def index():
             flash(str(e), 'error')
             return redirect(url_for('index'))
         
+        if len(questions) < num_questions :
+            flash(f"You ask for {num_questions} question but in the file i count {len(questions)} question", 'error')
+            return redirect(url_for('index'))
+        
         # Randomly sample the required number of questions
         session['num_questions'] = num_questions
         session['questions'] = random.sample(questions, num_questions)
