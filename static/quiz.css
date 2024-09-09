@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 3rem; /* Increased padding for more space inside the container */
+    width: 90%;
+    max-width: 800px; /* Increased max-width for larger container */
+}
+
+h2 {
+    color: #007BFF;
+    font-size: 2rem; /* Increased font size for better readability */
+    margin-bottom: 1.5rem; /* Increased bottom margin */
+}
+
+p {
+    font-size: 1.4rem; /* Increased font size for better readability */
+    margin-bottom: 2rem; /* Increased bottom margin for more space */
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-group, .radio-group {
+    margin-bottom: 1.5rem; /* Increased margin-bottom for better spacing */
+}
+
+.checkbox-group input[type="checkbox"], .radio-group input[type="radio"] {
+    margin-right: 0.75rem; /* Increased margin for better spacing */
+}
+
+.checkbox-group label, .radio-group label {
+    font-size: 1.2rem; /* Increased font size for better readability */
+    margin-right: 1rem;
+}
+
+input[type="text"] {
+    padding: 1rem; /* Increased padding for larger text input area */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1.2rem; /* Increased font size for better readability */
+    margin-bottom: 1.5rem; /* Increased bottom margin for more space */
+}
+
+button {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 1.2rem; /* Increased padding for larger buttons */
+    border-radius: 4px;
+    font-size: 1.2rem; /* Increased font size for better readability */
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.timer {
+    font-size: 1.2rem; /* Increased font size for better readability */
+}
+
+#submitButton {
+    display: none; /* Nasconde completamente l'elemento */
+}

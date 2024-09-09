@@ -5,168 +5,204 @@ import webbrowser
 import threading
 import time
 import socket
+
+import matplotlib
+matplotlib.use('agg')
+
+import matplotlib.pyplot as plt
+import io
+import base64
 from threading import Timer
+from utils import load_questions, format_time, get_remaining_time, unpac
 
 app = Flask(__name__)
 app.secret_key = 'idice'  # TODO: change it
 
-PORT = 5000
+PORT = 5000 # default
 
-def load_questions(file, modality):
-    """
-    Load questions from a file based on the modality.
-
-    :param file: A file-like object containing question data.
-    :param modality: The type of quiz ('single' for single answer, 'multiple' for multiple choice).
-    :return: A list of questions with options and correct answers.
-    :raises ValueError: If the file content is invalid or does not match the modality.
-    """
-    try:
-        content = file.read().decode('utf-8').strip()
-    except UnicodeDecodeError:
-        raise ValueError("The file could not be decoded. Please ensure it is a valid UTF-8 encoded text file.")
-
-    lines = content.split('\n')
-    
-    blocks = []
-    current_block = []
-    for line in lines:
-        stripped_line = line.strip()
-        if stripped_line:
-            current_block.append(stripped_line)
-        else:
-            if current_block:
-                blocks.append('\n'.join(current_block))
-                current_block = []
-    if current_block:
-        blocks.append('\n'.join(current_block))  # Append the last block if not empty
-
-    if not blocks:
-        raise ValueError("The file is empty or incorrectly formatted. Each question should be separated by two newlines.")
-
-    questions = []
-    
-    for block_line_number, block in enumerate(blocks, 1):
-        parts = block.strip().split('\n')
-        
-        if not parts or len(parts) < 2:
-            raise ValueError(f"Error at block {block_line_number}: Each block must contain at least a question and an answer or options.")
-        
-        question = parts[0].strip()
-        
-        if not question:
-            raise ValueError(f"Error at block {block_line_number}: A question is missing in one of the blocks.")
-        
-        if modality == 'single':
-            if len(parts) != 2:
-                raise ValueError(f"Error at block {block_line_number}: For 'single' modality, each question block should contain exactly two lines.")
-            correct_answer = parts[1].strip()
-            if not correct_answer:
-                raise ValueError(f"Error at block {block_line_number}: The correct answer is missing or empty.")
-            questions.append((question, None, correct_answer))
-        
-        elif modality == 'multiple':
-            options = parts[1:-1]
-            correct_answer_line = parts[-1].strip()
-            if not correct_answer_line.startswith('Correct answer: '):
-                raise ValueError(f"Error at block {block_line_number}: The last line for 'multiple' modality should start with 'Correct answer: '")
-            
-            correct_answer = correct_answer_line[len('Correct answer: '):].split(', ')
-            
-            if not all(option.strip() for option in options):
-                raise ValueError(f"Error at block {block_line_number}: One or more options are empty.")
-            
-            if not correct_answer:
-                raise ValueError(f"Error at block {block_line_number}: Correct answers are missing or empty.")
-            
-            # Ensure that each correct answer is among the options
-            if not all(ans[0] in [o[0] for o in options] for ans in correct_answer):
-                raise ValueError(f"Error at block {block_line_number}: One or more correct answers are not among the provided options.")
-            
-            questions.append((question, options, correct_answer))
-        
-        else:
-            raise ValueError(f"Error at block {block_line_number}: Invalid modality. Must be 'single' or 'multiple'.")
-
-    return questions
-
+# Avoid caching
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        session["modality"] = request.form['modality']
-        question_file = request.files['file_upload']
-        num_questions = int(request.form['num_questions'])
         
-        # Ensure the file is of the correct type
+        # Initialize data structures
+        session["settings"] = {}
+        session["values"] = {}
+        
+        # FILE
+        question_file = request.files['file_upload']
         if not question_file or not question_file.filename.endswith('.txt'):
             flash("Invalid file type. Please upload a .txt file.", 'error')
             return redirect(url_for('index'))
         
+        # SETTINGS
+        session["settings"]["timer"] = int(request.form['timer'])*60 # mins -> secs
+        session["settings"]["modality"] = request.form['modality']
+        session["settings"]["num_questions"] = int(request.form['num_questions'])
+        session["settings"]["results"] = []
+        session["settings"]["scores"] = {
+            "correct" : float(request.form['correct_score']),
+            "blank" : float(request.form['blank_score']),
+            "wrong" : float(request.form['wrong_score'])
+        }
+
         try:
             # Load questions from the file
-            questions = load_questions(question_file, session["modality"])
+            session["settings"]["all_questions"] = load_questions(question_file, session["settings"]["modality"])
         except ValueError as e:
+            print(e) # flashe seems as it doesn't work
             flash(str(e), 'error')
             return redirect(url_for('index'))
         
+        # Check
+        questions = session["settings"]["all_questions"]
+        num_questions = session["settings"]["num_questions"]
         if len(questions) < num_questions :
             flash(f"You ask for {num_questions} question but in the file i count {len(questions)} question", 'error')
             return redirect(url_for('index'))
         
-        # Randomly sample the required number of questions
-        session['num_questions'] = num_questions
-        session['questions'] = random.sample(questions, num_questions)
-        session['current_question'] = 0
-        session['correct_answers'] = 0
-        session['user_answers'] = []
-        return redirect(url_for('quiz'))
+        return redirect(url_for('start'))
     
     return render_template('index.html')
 
-@app.route('/quiz', methods=['GET', 'POST'])
-def quiz():
+@app.route('/start', methods=['GET', 'POST'])
+def start():
     
-    if session['current_question'] >= session['num_questions']:
-        return redirect(url_for('results'))
-    
-    current_question = session['questions'][session['current_question']]
-
     if request.method == 'POST':
-        user_answer = request.form['answer'].strip().lower()
-        if type(current_question[2])==list :
-            correct_answer = current_question[2][0].strip().lower()
-        else :
-            correct_answer = current_question[2].strip().lower()
-
-        if session["modality"] == "multiple" : user_answer = user_answer[0]
-        
-        if user_answer == correct_answer:
-            session['correct_answers'] += 1
-
-        session['user_answers'].append({
-            'question': current_question[0],
-            'correct_answer': correct_answer,
-            'user_answer': user_answer,
-            'options': current_question[1]
-        })
-
-        session['current_question'] += 1
+        # VALUES
+        session["values"]['questions'] = random.sample(session["settings"]['all_questions'], session["settings"]['num_questions']) 
+        session["values"]['current_question'] = 1
+        session["values"]['answers'] = [""]*session["settings"]["num_questions"]
+        session["values"]['start_time'] = session["settings"]["timer"]
+        session.modified = True
+    
         return redirect(url_for('quiz'))
 
-    return render_template('quiz.html', question=current_question[0], options=current_question[1])
+    # Format the timer to display
+    formatted_time = format_time(session["settings"]["timer"])
+
+    return render_template('start.html', timer=formatted_time)
     
+@app.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+
+    # Read from session
+    q = session["values"]['current_question']
+    questions = session["values"]['questions']
+    
+    # Read the request
+    question_num = request.args.get('question_num')
+    remaining_time = request.args.get('remaining_time')
+    if question_num:
+        q = int(question_num)
+        session["values"]["current_question"] = q
+        session.modified = True
+    if remaining_time :
+        session["values"]['start_time'] = int(remaining_time)
+        session.modified = True
+    
+    current_question = questions[q-1]
+    
+    if request.method == 'POST':
+        
+        # If it's not in time
+        if ("expired" in request.form) and (request.form['expired']=="True") :
+            # Show banner and go to result
+            flash("Time's up!", 'error')
+            return redirect(url_for('result'))
+        else :
+            # Take the time for the next quiz
+            session["values"]['start_time'] = int(request.form['remaining_time'])
+            
+            # Take the answer 
+            # TODO: forse faccio lower() anche dopo in result, vedere se inutile
+            match session["settings"]["modality"]:
+                case "single":
+                    user_answer = request.form['answer'].strip().lower()
+                case "multiple" :
+                    user_answer = request.form.getlist('answer[]')
+                    user_answer = [ans[0] for ans in user_answer] # extract only the first letter (a-z)
+                    
+            session["values"]['answers'][q-1] = user_answer
+            session.modified = True
+            return redirect(url_for('quiz'))
+        
+    # If already answered report the last answer ==> simulate a memory while moving along questions
+    if session["values"]['answers'][q-1] != "" :
+        match session["settings"]["modality"]:
+            case "single":
+                    prev_answer = session["values"]['answers'][q-1] 
+            case "multiple" :
+                    prev_answer = session["values"]['answers'][q-1] 
+                    prev_answer = [answer for answer in current_question[1] if answer[0] in prev_answer]
+    else :
+        prev_answer = ""
+    
+    return render_template('quiz.html', question=current_question[0], 
+                                        options=current_question[1], 
+                                        prev_answer=prev_answer)
+    
+@app.route('/result', methods=['GET'])
+def result():
+    
+    # Read from session
+    total=session['settings']['num_questions'] 
+    user_answers=session["values"]['answers']
+    quiz_questions=session["values"]["questions"]
+    scores=session["settings"]["scores"]
+    
+    questions, questions_points = unpac(quiz_questions, scores, user_answers)
+    best_score = total * scores["correct"]
+    score=sum(questions_points)
+
+    # Update only when you completed the quiz
+    referer = request.headers.get('Referer')
+    if referer and '/quiz' in referer:
+        session["settings"]["results"].append(score)
+        session.modified = True
+    
+    return render_template('result.html',   score=score,
+                                            total=best_score, 
+                                            user_answers=user_answers,
+                                            questions=questions,
+                                            questions_points=questions_points,
+                                            quiz_questions=quiz_questions)
+ 
 @app.route('/results', methods=['GET'])
 def results():
-    return render_template('results.html', score=session['correct_answers'], total=session['num_questions'], user_answers=session['user_answers'])
- 
-@app.route('/debug')
-def debug():
-    # DEBUG only
-    return f"""
-        <h1>Session Data</h1>
-        <pre>{session}</pre>
-    """
+    # Sample data: Replace this with your session data
+    scores = session["settings"]["results"]
+
+    # Create the graph
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(1, 1, 1)
+    x_values = range(1, len(scores) + 1)
+    ax.plot(x_values, scores, marker='o')
+    ax.set_title('Quiz Results')
+    ax.set_xlabel('Attempt')
+    ax.set_ylabel('Score')
+
+    # Set x-axis to only show integer ticks
+    ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+    ax.set_xticks(x_values)
+
+    # Save the graph to a bytes buffer
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+
+    # Convert the image to base64 string
+    graph_url = base64.b64encode(img.getvalue()).decode()
+
+    # Pass the graph to the template
+    return render_template('results.html', graph_url=graph_url)
 
 def open_browser():
     webbrowser.open_new(f"http://127.0.0.1:{PORT}")

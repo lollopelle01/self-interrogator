@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='result.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Your Results</h1>
+        <p>Your score is {{ score }}/{{ total }} </p>
+    
+        <h2>Review Your Answers:</h2>
+        <ul>
+            {% for answer in user_answers %}
+                <li>
+                    <strong>Question:</strong> {{ questions[loop.index0] }}<br>
+                    <strong>Your Answer:</strong> {{ user_answers[loop.index0] }}<br>
+                    <strong>Correct Answer:</strong> {{ quiz_questions[loop.index0][2] }}<br>
+                    <strong>Points:</strong> {{ questions_points[loop.index0] }}<br>
+
+                    {% if questions_points[loop.index0] == session["settings"]["scores"]["correct"] %}
+                        <span class="correct">Correct!</span>
+                    {% elif questions_points[loop.index0] == session["settings"]["scores"]["wrong"]%}
+                        <span class="incorrect">Incorrect!</span>
+                    {% else %}
+                        <span class="partial">Partial!</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('start') }}">Try Again</a>
+        <a href="{{ url_for('index') }}">Exit</a>
+        <a href="{{ url_for('results') }}">See all results</a>
+    </div>
+    
+</body>
+</html>

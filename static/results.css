@@ -1,0 +1,73 @@
+/* General body styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container for the content */
+.container {
+    background-color: #fff;
+    padding: 40px; /* Aumento del padding */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Ombra più grande */
+    border-radius: 20px; /* Maggiore arrotondamento degli angoli */
+    text-align: center;
+    max-width: 800px; /* Aumento della larghezza massima */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Heading style */
+h1 {
+    color: #333;
+    font-size: 4em; /* Raddoppio della dimensione del testo */
+    margin-bottom: 30px;
+}
+
+/* Graph image */
+img {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #ddd; /* Bordo più spesso */
+    border-radius: 20px; /* Maggiore arrotondamento degli angoli */
+    margin-bottom: 40px; /* Maggiore spazio tra l'immagine e i bottoni */
+}
+
+/* Link styles */
+#links {
+    display: flex;
+    justify-content: center;
+    gap: 40px; /* Maggiore spazio tra i pulsanti */
+}
+
+a {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 1.5em; /* Ingrandimento del testo nei bottoni */
+    color: #fff;
+    background-color: #007BFF;
+    padding: 20px 40px; /* Bottoni più grandi */
+    border-radius: 10px; /* Maggiore arrotondamento dei bottoni */
+    transition: background-color 0.3s ease;
+}
+
+a:hover {
+    background-color: #0056b3;
+}
+
+/* Style for Exit link */
+a.exit-link {
+    background-color: #dc3545;
+}
+
+a.exit-link:hover {
+    background-color: #c82333;
+}

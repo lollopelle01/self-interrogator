@@ -4,122 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Application</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            width: 90%;
-            max-width: 600px;
-        }
-        h1 {
-            text-align: center;
-            color: #007BFF;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-        select, input[type="number"] {
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        button {
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            padding: 1rem;
-            border-radius: 4px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .examples {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #ddd;
-        }
-        .examples h2 {
-            color: #007BFF;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .examples pre {
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 1rem;
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-        .flash {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-            color: #fff;
-        }
-        .flash.error {
-            background-color: #f44336;
-        }
-        .flash.success {
-            background-color: #4CAF50;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>Welcome to the Quiz Application</h1>
-
-        <!-- Flash message display -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div>
-                    {% for category, message in messages %}
-                        <div class="flash {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
+        
         <form method="POST" action="{{ url_for('index') }}" enctype="multipart/form-data">
+            
+            <!-- Selezione tipo di quiz -->
             <label for="modality">Select the type of quiz:</label>
             <select id="modality" name="modality" required>
                 <option value="single">Single Answer Questions</option>
                 <option value="multiple">Multiple Choice Questions</option>
             </select>
+            
+            <table>
+                <tr>
+                  <td>
+                    <div>
+                        <!-- Numero di domande -->
+                        <label for="num_questions">Num. questions in the quiz:</label>
+                        <input type="number" id="num_questions" name="num_questions" required min="1" max="100" style="width: 150px;">
 
-            <label for="num_questions">How many questions would you like to answer?</label>
-            <input type="number" id="num_questions" name="num_questions" required min="1" max="100">
-
-            <label for="file_upload">Upload your questions file (.txt):</label>
-            <input type="file" id="file_upload" name="file_upload" accept=".txt" required>
-
+                        <!-- Caricamento file domande -->
+                        <br/>
+                        <label for="file_upload">Upload file (.txt):</label>
+                        <input type="file" id="file_upload" name="file_upload" accept=".txt" required>
+                                        
+                        <!-- Impostazione timer -->
+                        <br/>
+                        <br/>
+                        <label for="timer">Set the timer:</label>
+                        <select id="timer" name="timer">
+                            <option value="0">No timer</option>
+                            <option value="1">1 minute</option>
+                            <option value="5">5 minutes</option>
+                            <option value="10">10 minutes</option>
+                            <option value="15">15 minutes</option>
+                            <option value="20">20 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="90">1 hour 30 minutes</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      <fieldset>
+                        <legend>Score Settings</legend>
+                        
+                        <!-- Punteggio per risposta corretta -->
+                        <label for="correct_score">Points for a correct answer:</label>
+                        <input type="number" step="0.01" id="correct_score" name="correct_score" value="1" required>
+                        
+                        <!-- Punteggio per risposta in bianco -->
+                        <br/>
+                        <label for="blank_score">Points for a blank answer:</label>
+                        <input type="number" step="0.01" id="blank_score" name="blank_score" value="0" required>
+                        
+                        <!-- Punteggio per risposta sbagliata -->
+                        <br/>
+                        <label for="wrong_score">Points for a wrong answer:</label>
+                        <input type="number" step="0.01" id="wrong_score" name="wrong_score" value="-1" required>
+                      </fieldset>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              
+        
+            <!-- Pulsante per avviare il quiz -->
             <button type="submit">Start Quiz</button>
         </form>
-
+        
         <div class="examples">
             <h2>File Format Examples:</h2>
             <div>

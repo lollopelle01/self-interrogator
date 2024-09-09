@@ -3,90 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Question {{ session['current_question'] + 1 }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            width: 90%;
-            max-width: 600px;
-        }
-        h2 {
-            color: #007BFF;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        .radio-group {
-            margin-bottom: 1rem;
-        }
-        .radio-group input[type="radio"] {
-            margin-right: 0.5rem;
-        }
-        .radio-group label {
-            margin-right: 1rem;
-            font-size: 1rem;
-        }
-        input[type="text"] {
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }
-        button {
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            padding: 1rem;
-            border-radius: 4px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <title>Question {{ session['values']['current_question'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz.css') }}">
+    <script type="text/javascript" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var timerSeconds = {{ session["values"]['start_time'] }};
+            
+            // Controlla se il tempo del timer è 0
+            if (timerSeconds <= 0) {
+                document.getElementById("timer-display").innerHTML = "";
+                document.getElementById('remaining_time').value = 99999999999999;
+            }
+
+            var countDownDate = new Date().getTime() + timerSeconds * 1000;
+            var remaining_time = timerSeconds;
+
+            var form = document.getElementById("quizForm");
+            var submitButton = document.getElementById('submitButton');
+
+            document.getElementById('remaining_time').value = remaining_time;
+
+            var x = setInterval(function() {
+                var now = new Date().getTime();
+                var distance = countDownDate - now;
+
+                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById("timer").innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+                remaining_time = Math.max(0, Math.floor(distance / 1000)); 
+                
+                document.getElementById('remaining_time').value = remaining_time;
+
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById("timer").innerHTML = "EXPIRED";
+                    var expiredInput = document.createElement("input");
+                    expiredInput.setAttribute("type", "hidden");
+                    expiredInput.setAttribute("name", "expired");
+                    expiredInput.setAttribute("value", "True");
+                    form.appendChild(expiredInput);
+                    form.submit();
+                }
+            }, 1000);
+
+            setTimeout(function() {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Submit';
+            }, 100);
+
+            form.addEventListener('submit', function(event) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = 'Submitting...';
+            });
+
+            const nextButton = document.getElementById('nextButton');
+            const prevButton = document.getElementById('prevButton');
+
+            nextButton.addEventListener('click', function() {
+                handleNavigation('next');
+            });
+
+            prevButton.addEventListener('click', function() {
+                handleNavigation('prev');
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'ArrowRight') {
+                    handleNavigation('next');
+                } else if (event.key === 'ArrowLeft') {
+                    handleNavigation('prev');
+                }
+            });
+
+            function handleNavigation(direction) {
+                // Create a FormData object from the form
+                var formData = new FormData(form);
+
+                // Send the form data using fetch
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                }).then(function(response) {
+                    // Check if the form submission was successful
+                    if (response.ok) {
+                        var question_num = {{ session["values"]["current_question"] }};
+                        var total_questions = {{ session["settings"]["num_questions"] }};
+
+                        if (direction === 'next' && question_num != total_questions) {
+                            window.location.href = "{{ url_for('quiz') }}?question_num=" + (question_num + 1) + "&remaining_time=" + remaining_time;
+                        } else if (direction === 'prev' && question_num != 1) {
+                            window.location.href = "{{ url_for('quiz') }}?question_num=" + (question_num - 1) + "&remaining_time=" + remaining_time;
+                        }
+                    } else {
+                        console.error('Form submission failed.');
+                    }
+                }).catch(function(error) {
+                    console.error('Error:', error);
+                });
+            }
+        });
+
+
+    </script>
 </head>
 <body>
     <div class="container">
-        <h2>Question {{ session['current_question'] + 1 }} of {{ session['num_questions'] }}:</h2>
+        <!-- Titolo e timer affiancati -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Question {{ session['values']['current_question'] }} of {{ session['settings']['num_questions'] }}:</h2>
+            <div id="timer-display" class="timer" style="margin-left: 20px;">
+                Time Remaining: <br/><span id="timer"></span>
+            </div>
+        </div>
+
+        <!-- Mostra la domanda -->
         <p>{{ question }}</p>
-        <form method="POST" action="{{ url_for('quiz') }}">
+
+
+        <!-- Form per inviare le risposte -->
+        <form id="quizForm" method="POST" action="{{ url_for('quiz') }}">
             {% if options %}
-                <div class="radio-group">
+                <div class="checkbox-group">
                     {% for option in options %}
-                        <input type="radio" id="{{ option }}" name="answer" value="{{ option }}" required>
-                        <label for="{{ option }}">{{ option }}</label><br>
+                        {% if option in prev_answer %}
+                            <input type="checkbox" id="{{ option }}" name="answer[]" value="{{ option }}" checked>
+                        {% else %}
+                            <input type="checkbox" id="{{ option }}" name="answer[]" value="{{ option }}">
+                        {% endif %}
+                            <label for="{{ option }}">{{ option }}</label><br>
                     {% endfor %}
                 </div>
             {% else %}
                 <label for="answer">Your Answer:</label>
-                <input type="text" id="answer" name="answer" required>
+                <input type="text" id="answer" name="answer" value="{{ prev_answer }}">
             {% endif %}
-            <button type="submit">Submit</button>
+            <input type="hidden" id="remaining_time" name="remaining_time">
+            
+            <!-- Pulsante submit per domande normali -->
+            <button type="submit" id="submitButton" display="none">Submit</button>
         </form>
+        
+
+        <!-- Frecce di navigazione e pulsante Send al centro -->
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <button id="prevButton" style="flex: 1;">← Previous</button>
+            {% if session["values"]['current_question'] == session["settings"]['num_questions'] %}
+                <a href="{{ url_for('result') }}" id="sendButton" 
+                    style="display: inline-block; background-color: red; color: white; padding: 10px 20px; text-align: center; 
+                        text-decoration: none; border-radius: 5px; font-weight: bold;">Send</a>
+            {% endif %}
+            <button id="nextButton" style="flex: 1;">Next →</button>
+        </div>
     </div>
 </body>
 </html>
