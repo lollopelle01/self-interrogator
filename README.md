@@ -16,7 +16,7 @@ This is a simple Flask-based web application for creating and taking quizzes. Us
 - **Exam Mode**: Optional timer mode to track time during the quiz.
 - **Quiz Flow**: Includes a choice page for selecting details and modalities, and a quiz page for taking the quiz and viewing results.
 - **LaTeX Support**: Render LaTeX code in questions and answers for math-related content.
-  While writing the txt file use `\( formula \)` to use it
+  While writing the txt file write `\( <formula> \)` to use it
 - **Results Visualization**: Display results in session, potentially with a graph for marks.
 
 ## Issues
